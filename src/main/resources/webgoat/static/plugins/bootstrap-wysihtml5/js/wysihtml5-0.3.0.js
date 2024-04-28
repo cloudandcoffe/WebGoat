@@ -1142,71 +1142,46 @@ rangy.createModule("DomUtil", function(api, module) {
         // discussion and base code for this implementation at issue 67.
         // Spec: http://html5.org/specs/dom-parsing.html#extensions-to-the-range-interface
         // Thanks to Aleks Williams.
-        function(fragmentStr) {
-            // "Let node the context object's start's node."
-            var node = this.startContainer;
-            var doc = dom.getDocument(node);
+        function parseFragment(fragmentStr) {
+    var node = this.startContainer;
+    var doc = dom.getDocument(node);
 
-            // "If the context object's start's node is null, raise an INVALID_STATE_ERR
-            // exception and abort these steps."
-            if (!node) {
-                throw new DOMException("INVALID_STATE_ERR");
-            }
+    if (!node) {
+        throw new DOMException("INVALID_STATE_ERR");
+    }
 
-            // "Let element be as follows, depending on node's interface:"
-            // Document, Document Fragment: null
-            var el = null;
+    var el = null;
 
-            // "Element: node"
-            if (node.nodeType == 1) {
-                el = node;
+    if (node.nodeType == 1) {
+        el = node;
+    } else if (dom.isCharacterDataNode(node)) {
+        el = dom.parentElement(node);
+    }
 
-            // "Text, Comment: node's parentElement"
-            } else if (dom.isCharacterDataNode(node)) {
-                el = dom.parentElement(node);
-            }
+    if (el === null || (
+        el.nodeName == "HTML"
+        && dom.isHtmlNamespace(dom.getDocument(el).documentElement)
+        && dom.isHtmlNamespace(el)
+    )) {
+        el = doc.createElement("body");
+    } else {
+        el = el.cloneNode(false);
+    }
 
-            // "If either element is null or element's ownerDocument is an HTML document
-            // and element's local name is "html" and element's namespace is the HTML
-            // namespace"
-            if (el === null || (
-                el.nodeName == "HTML"
-                && dom.isHtmlNamespace(dom.getDocument(el).documentElement)
-                && dom.isHtmlNamespace(el)
-            )) {
+    // Cria um novo DocumentFragment
+    var fragment = doc.createDocumentFragment();
 
-            // "let element be a new Element with "body" as its local name and the HTML
-            // namespace as its namespace.""
-                el = doc.createElement("body");
-            } else {
-                el = el.cloneNode(false);
-            }
+    // Parseia o fragmentStr como HTML e adiciona ao DocumentFragment
+    var template = doc.createElement('template');
+    template.innerHTML = fragmentStr;
+    var child = template.content.firstChild;
+    while (child) {
+        fragment.appendChild(child);
+        child = template.content.firstChild;
+    }
 
-            // "If the node's document is an HTML document: Invoke the HTML fragment parsing algorithm."
-            // "If the node's document is an XML document: Invoke the XML fragment parsing algorithm."
-            // "In either case, the algorithm must be invoked with fragment as the input
-            // and element as the context element."
-            el.innerHTML = fragmentStr;
-
-            // "If this raises an exception, then abort these steps. Otherwise, let new
-            // children be the nodes returned."
-
-            // "Let fragment be a new DocumentFragment."
-            // "Append all new children to fragment."
-            // "Return fragment."
-            return dom.fragmentFromNodeChildren(el);
-        } :
-
-        // In this case, innerHTML cannot be trusted, so fall back to a simpler, non-conformant implementation that
-        // previous versions of Rangy used (with the exception of using a body element rather than a div)
-        function(fragmentStr) {
-            assertNotDetached(this);
-            var doc = getRangeDocument(this);
-            var el = doc.createElement("body");
-            el.innerHTML = fragmentStr;
-
-            return dom.fragmentFromNodeChildren(el);
-        };
+    return fragment;
+};
 
     /*----------------------------------------------------------------------------------------------------------------*/
 
