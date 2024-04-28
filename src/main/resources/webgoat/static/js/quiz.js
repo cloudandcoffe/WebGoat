@@ -9,31 +9,46 @@ Basic steps for implementing a quiz:
 **/
 
 $(function () {
-    var json = "";
     var client = new XMLHttpRequest();
     var quiz_id = document.getElementById("quiz_id").getAttribute("data-quiz_id");
     client.open('GET', 'lesson_js/questions_' + quiz_id + '.json');
     client.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            json += client.responseText;
-            console.log("entry");
-            let questionsJson = json;
-            var questionsObj = JSON.parse(questionsJson);
-            let html = "";
-            $.each(questionsObj, function(i, obj) {
-                $.each(obj, function(j, quest) {
-                  html += "<div id='question_" + j + "' class='quiz_question' name='question'><p>" + (j+1) + ".&nbsp;" + quest.text + "</p>";
-                  html += "<fieldset>";
-                  $.each(quest.solutions, function(k, solution) {
-                    solution = "Solution " + k + ": " + solution;
-                    html += '<input id="question_' + j + '_' + k + '_input" type="radio" name="question_' + j +'_solution" value="' + solution + '" required><label for="question_' + j + '_' + k + '_input">' + solution + '</label><br>';
-                  });
-                  html += "</fieldset></div>";
+            var questionsObj = JSON.parse(client.responseText);
+            var container = document.getElementById("q_container");
+            container.innerHTML = "";
+            Object.keys(questionsObj).forEach(function(key) {
+                var questionGroup = questionsObj[key];
+                Object.keys(questionGroup).forEach(function(questionKey) {
+                    var question = questionGroup[questionKey];
+                    var questionDiv = document.createElement("div");
+                    questionDiv.id = "question_" + questionKey;
+                    questionDiv.className = "quiz_question";
+                    questionDiv.setAttribute("name", "question");
+                    var questionText = document.createElement("p");
+                    questionText.textContent = (parseInt(questionKey) + 1) + ". " + question.text;
+                    questionDiv.appendChild(questionText);
+                    var fieldset = document.createElement("fieldset");
+                    question.solutions.forEach(function(solution, index) {
+                        var solutionLabel = document.createElement("label");
+                        solutionLabel.setAttribute("for", "question_" + questionKey + "_" + index + "_input");
+                        solutionLabel.textContent = "Solution " + index + ": " + solution;
+                        var solutionInput = document.createElement("input");
+                        solutionInput.id = "question_" + questionKey + "_" + index + "_input";
+                        solutionInput.type = "radio";
+                        solutionInput.name = "question_" + questionKey + "_solution";
+                        solutionInput.value = solution;
+                        solutionInput.required = true;
+                        fieldset.appendChild(solutionInput);
+                        fieldset.appendChild(solutionLabel);
+                        fieldset.appendChild(document.createElement("br"));
+                    });
+                    questionDiv.appendChild(fieldset);
+                    container.appendChild(questionDiv);
                 });
             });
-            document.getElementById("q_container").innerHTML = html;
         }
-    }
+    };
     client.send();
 });
 
