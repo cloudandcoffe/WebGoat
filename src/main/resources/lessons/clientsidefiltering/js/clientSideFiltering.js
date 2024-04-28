@@ -5,7 +5,6 @@ function selectUser() {
     var employeeRecordElement = document.getElementById("employeeRecord");
     var newEmployeeElement = document.getElementById(newEmployeeID);
     
-    // Verifica se o elemento selecionado existe antes de atribuir o conteúdo
     if (employeeRecordElement && newEmployeeElement) {
         employeeRecordElement.textContent = newEmployeeElement.textContent;
     }
@@ -20,28 +19,30 @@ function fetchUserData() {
 
 function ajaxFunction(userId) {
     $.get("clientSideFiltering/salaries?userId=" + userId, function (result, status) {
-        var html = "<table border = '1' width = '90%' align = 'center'";
-        html = html + '<tr>';
-        html = html + '<td>UserID</td>';
-        html = html + '<td>First Name</td>';
-        html = html + '<td>Last Name</td>';
-        html = html + '<td>SSN</td>';
-        html = html + '<td>Salary</td>';
+        var table = document.createElement("table");
+        table.setAttribute("border", "1");
+        table.setAttribute("width", "90%");
+        table.setAttribute("align", "center");
+
+        var headerRow = table.insertRow();
+        headerRow.insertCell().textContent = "UserID";
+        headerRow.insertCell().textContent = "First Name";
+        headerRow.insertCell().textContent = "Last Name";
+        headerRow.insertCell().textContent = "SSN";
+        headerRow.insertCell().textContent = "Salary";
 
         for (var i = 0; i < result.length; i++) {
-            html = html + '<tr id = "' + result[i].UserID + '"</tr>';
-            html = html + '<td>' + result[i].UserID + '</td>';
-            html = html + '<td>' + result[i].FirstName + '</td>';
-            html = html + '<td>' + result[i].LastName + '</td>';
-            html = html + '<td>' + result[i].SSN + '</td>';
-            html = html + '<td>' + result[i].Salary + '</td>';
-            html = html + '</tr>';
+            var row = table.insertRow();
+            row.id = result[i].UserID;
+            row.insertCell().textContent = result[i].UserID;
+            row.insertCell().textContent = result[i].FirstName;
+            row.insertCell().textContent = result[i].LastName;
+            row.insertCell().textContent = result[i].SSN;
+            row.insertCell().textContent = result[i].Salary;
         }
-        html = html + '</tr></table>';
 
-        var newdiv = document.createElement("div");
-        newdiv.innerHTML = html;
         var container = document.getElementById("hiddenEmployeeRecords");
-        container.appendChild(newdiv);
+        container.innerHTML = "";
+        container.appendChild(table);
     });
 }
