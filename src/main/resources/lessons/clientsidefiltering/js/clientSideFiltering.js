@@ -1,9 +1,14 @@
 var dataFetched = false;
 
 function selectUser() {
-
     var newEmployeeID = $("#UserSelect").val();
-    document.getElementById("employeeRecord").innerHTML = document.getElementById(newEmployeeID).innerHTML;
+    var employeeRecordElement = document.getElementById("employeeRecord");
+    var newEmployeeElement = document.getElementById(newEmployeeID);
+    
+    // Verifica se o elemento selecionado existe antes de atribuir o conteúdo
+    if (employeeRecordElement && newEmployeeElement) {
+        employeeRecordElement.textContent = newEmployeeElement.textContent;
+    }
 }
 
 function fetchUserData() {
