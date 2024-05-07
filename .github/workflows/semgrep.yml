@@ -49,4 +49,8 @@ jobs:
           git add .
           git commit -m "New version created: ${{ steps.create_version.outputs.VERSION }}"
           git push
+      - name: List tags
+        run: |
+          git fetch --tags
+          git tag -l
 
