@@ -20,6 +20,8 @@ jobs:
       - name: Create version
         id: create_version
         run: echo "VERSION=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+        env:
+          VERSION: ${{ steps.create_version.outputs.VERSION }}
       - name: Create artifact directories
         run: mkdir -p artifacts/${{github.repository}}
       - name: Build artifact
@@ -37,9 +39,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.DEVELOPER_TOKEN}}
         with:
-          tag_name: ${{ steps.create_version.outputs.VERSION }}
-          release_name: Release ${{ steps.create_version.outputs.VERSION }}
-          body: New version ${{ steps.create_version.outputs.VERSION }} created.
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
+          body: New version ${{ env.VERSION }} created.
           draft: false
           prerelease: false
       - name: Commit and push
@@ -47,7 +49,7 @@ jobs:
           git config --global user.name 'cloudandcoffe'
           git config --global user.email 'cloudandcoffe@gmail.com'
           git add .
-          git commit -m "New version created: ${{ steps.create_version.outputs.VERSION }}"
+          git commit -m "New version created: ${{ env.VERSION }}"
           git push
       - name: List tags
         run: |
