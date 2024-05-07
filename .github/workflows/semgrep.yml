@@ -49,7 +49,7 @@ jobs:
           git config --global user.name 'cloudandcoffe'
           git config --global user.email 'cloudandcoffe@gmail.com'
           git add .
-          git commit -m "New version created: ${{ env.VERSION }}"
+          git commit -m "New version created: ${{env.VERSION}}"
           git push
       - name: List tags
         run: |
