@@ -46,7 +46,7 @@ public class Assignment5 extends AssignmentEndpoint {
 
   @PostMapping("/challenge/5")
   @ResponseBody
-  public AttackResult login(
+public AttackResult login(
       @RequestParam String username_login, @RequestParam String password_login) throws Exception {
     if (!StringUtils.hasText(username_login) || !StringUtils.hasText(password_login)) {
       return failed(this).feedback("required4").build();
@@ -57,13 +57,11 @@ public class Assignment5 extends AssignmentEndpoint {
     try (var connection = dataSource.getConnection()) {
       PreparedStatement statement =
           connection.prepareStatement(
-              "select password from challenge_users where userid = '"
-                  + username_login
-                  + "' and password = '"
-                  + password_login
-                  + "'");
+              "select password from challenge_users where userid = ? and password = ?");
+      statement.setString(1, username_login);
+      statement.setString(2, password_login);
       ResultSet resultSet = statement.executeQuery();
-
+      // rest of your code
       if (resultSet.next()) {
         return success(this).feedback("challenge.solved").feedbackArgs(flags.getFlag(5)).build();
       } else {
