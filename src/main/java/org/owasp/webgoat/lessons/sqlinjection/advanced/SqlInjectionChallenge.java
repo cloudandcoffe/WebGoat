@@ -51,7 +51,6 @@ public class SqlInjectionChallenge extends AssignmentEndpoint {
   }
 
   @PutMapping("/SqlInjectionAdvanced/challenge")
-  // assignment path is bounded to class so we use different http method :-)
   @ResponseBody
   public AttackResult registerNewUser(
       @RequestParam String username_reg,
@@ -61,12 +60,11 @@ public class SqlInjectionChallenge extends AssignmentEndpoint {
     AttackResult attackResult = checkArguments(username_reg, email_reg, password_reg);
 
     if (attackResult == null) {
-
       try (Connection connection = dataSource.getConnection()) {
-        String checkUserQuery =
-            "select userid from sql_challenge_users where userid = '" + username_reg + "'";
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(checkUserQuery);
+        String checkUserQuery = "select userid from sql_challenge_users where userid = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(checkUserQuery)) {
+          preparedStatement.setString(1, username_reg);
+          ResultSet resultSet = preparedStatement.executeQuery();
 
         if (resultSet.next()) {
           if (username_reg.contains("tom'")) {
